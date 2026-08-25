@@ -12,7 +12,7 @@ Two audio sources:
 ## Deploying to GitHub Pages
  GitHub URL
    ```
-   https://mjin8.github.io/pupvision/
+   https://mjin8.github.io/KaijuKat/
    ```
    It can take a minute or two to go live after the first deploy.
 
