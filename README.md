@@ -11,7 +11,7 @@ Two audio sources:
 
 ## Deploying to GitHub Pages
 GitHub will give you a URL like:
-   `https://mjin8.github.io/<repo-name>/`
+   `https://mjin8.github.io/KaijuKat/`
    It can take a minute or two to go live after the first deploy.
 
 ## Notes
