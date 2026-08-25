@@ -10,8 +10,10 @@ Two audio sources:
 - Live microphone input
 
 ## Deploying to GitHub Pages
-GitHub will give you a URL like:
-   `https://mjin8.github.io/KaijuKat/`
+ GitHub URL
+   ```
+   https://mjin8.github.io/pupvision/
+   ```
    It can take a minute or two to go live after the first deploy.
 
 ## Notes
