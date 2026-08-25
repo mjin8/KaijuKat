@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaiju Kat</title>
+<style>
+  :root{
+    --paper:#0b0d12;
+    --ink:#e8e6df;
+    --muted:#8b8d97;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Courier New', monospace;
+    padding:24px 16px 60px;
+  }
+  h1{
+    font-size:1.1rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:28px;
+    text-align:center;
+  }
+  .panel{
+    max-width:520px;
+    margin:0 auto 40px;
+  }
+  .label{
+    font-size:0.75rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .frame{
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid #23262f;
+    position:relative;
+  }
+
+  .note{
+    font-size:0.72rem;
+    color:var(--muted);
+    margin-top:10px;
+    line-height:1.4;
+  }
+
+  /* ---------- ARCADE ---------- */
+  .arcade{
+    background:linear-gradient(180deg,#1a1220,#0a0710);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:5% 6% 4%;
+  }
+  .marquee{
+    width:88%;
+    height:13%;
+    background:linear-gradient(100deg,#ff2d78,#ff8a3d 40%,#ffd23d 70%,#3dfff0);
+    border-radius:8px 8px 2px 2px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Courier New',monospace;
+    font-weight:700;
+    letter-spacing:0.15em;
+    font-size:0.65rem;
+    color:#0a0710;
+    text-shadow:0 1px 0 rgba(255,255,255,0.4);
+    box-shadow:0 0 14px #ff2d7866;
+    animation:marqueepulse 2.2s ease-in-out infinite;
+  }
+  @keyframes marqueepulse{
+    0%,100%{filter:brightness(1);}
+    50%{filter:brightness(1.35);}
+  }
+  .cab-body{
+    width:88%;
+    flex:1;
+    background:#15101f;
+    border:3px solid #2b2338;
+    border-top:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:5% 4%;
+    gap:4%;
+    border-radius:0 0 4px 4px;
+    position:relative;
+  }
+  .arcade-screen{
+    width:100%;
+    aspect-ratio:1/1;
+    background:#000814;
+    border:4px solid #2b2b3a;
+    border-radius:6px;
+    position:relative;
+    overflow:hidden;
+    box-shadow: inset 0 0 20px #00000099, 0 0 12px #3dfff033;
+    flex-shrink:0;
+  }
+  @keyframes march{
+    0%{ transform: translate(var(--shakeX,0px), var(--shakeY,0px)) translateX(0px); }
+    100%{ transform: translate(var(--shakeX,0px), var(--shakeY,0px)) translateX(6px); }
+  }
+  .arcade-scan{
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(to bottom, rgba(0,0,0,0.25) 0 1px, transparent 1px 3px);
+    pointer-events:none;
+  }
+  .score{
+    position:absolute;
+    top:4%; left:6%;
+    font-family:'Courier New',monospace;
+    font-size:0.55rem;
+    color:#3dfff0;
+    text-shadow:0 0 4px #3dfff0aa;
+    letter-spacing:0.05em;
+  }
+  .controls{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 6%;
+  }
+  .joystick{
+    width:15%;
+    aspect-ratio:1;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #3a3a44, #16161c 75%);
+    position:relative;
+    border:2px solid #444;
+  }
+  .joystick::after{
+    content:'';
+    position:absolute;
+    top:-28%; left:50%;
+    width:22%; height:55%;
+    background:linear-gradient(#e63946,#8c1c26);
+    border-radius:50% 50% 20% 20%;
+    transform:translateX(-50%) rotate(0deg);
+    transform-origin:bottom center;
+    animation:wiggle 1.8s ease-in-out infinite;
+    box-shadow:0 0 5px #e6394688;
+  }
+  @keyframes wiggle{
+    0%,100%{transform:translateX(-50%) rotate(-6deg);}
+    50%{transform:translateX(-50%) rotate(6deg);}
+  }
+  .btn-row{
+    display:flex;
+    gap:8%;
+  }
+  .arc-btn{
+    width:15px;height:15px;
+    border-radius:50%;
+    box-shadow:0 2px 0 rgba(0,0,0,0.5), 0 0 6px currentColor;
+    animation:btnpulse 1.3s ease-in-out infinite;
+  }
+  .arc-btn.red{ background:#ff3b4e; color:#ff3b4e; animation-delay:0s;}
+  .arc-btn.yellow{ background:#ffcc3b; color:#ffcc3b; animation-delay:0.2s;}
+  .arc-btn.blue{ background:#3ba6ff; color:#3ba6ff; animation-delay:0.4s;}
+  @keyframes btnpulse{
+    0%,100%{opacity:0.5; transform:scale(0.85);}
+    50%{opacity:1; transform:scale(1.05);}
+  }
+
+  /* ---------- CAT-EARED INVADERS (single color, same silhouette as before + ears) ---------- */
+  .invaderRow{
+    position:absolute;
+    top:12%;
+    bottom:8%;
+    left:0; right:0;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-evenly;
+    align-content:space-evenly;
+    gap:6% 0;
+    padding:0 6%;
+    z-index:3;
+  }
+  .inv-cat{
+    position:relative;
+    width:14%;
+    aspect-ratio:1;
+    animation: march 1.4s steps(2) infinite alternate;
+  }
+  .invaderRow{
+    transition: filter 0.4s ease-out;
+  }
+  .invaderRow.shake{
+    animation: invShake 0.12s linear infinite;
+  }
+  @keyframes invShake{
+    0%,100%{ transform:translate(0,0) rotate(0deg); }
+    20%{ transform:translate(-1.5%,1%) rotate(-1.5deg); }
+    40%{ transform:translate(1.5%,-1%) rotate(1.5deg); }
+    60%{ transform:translate(-1.2%,-1%) rotate(-1deg); }
+    80%{ transform:translate(1.2%,1%) rotate(1deg); }
+  }
+  .inv-cat .body{
+    position:absolute;
+    inset:0;
+    background:#3a4a3e;
+    border:1px solid #4d6155;
+    clip-path: polygon(20% 0%, 80% 0%, 100% 40%, 100% 100%, 80% 70%, 20% 70%, 0% 100%, 0% 40%);
+    box-shadow:none;
+    transition: background 0.18s ease-out, box-shadow 0.18s ease-out;
+  }
+  .inv-cat .ear{
+    position:absolute;
+    top:-32%;
+    width:26%;
+    aspect-ratio:1;
+    background:#3a4a3e;
+    border:1px solid #4d6155;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    box-shadow:none;
+    transition: background 0.18s ease-out, box-shadow 0.18s ease-out;
+  }
+  .inv-cat.lit .body{
+    background:#3dff6e;
+    box-shadow:0 0 6px #3dff6eaa;
+  }
+  .inv-cat.lit .ear{
+    background:#3dff6e;
+    box-shadow:0 0 4px #3dff6eaa;
+  }
+  .inv-cat.lit.bright .body{
+    background:#c8ffdc;
+    box-shadow:0 0 12px #3dff6ee0;
+  }
+  .inv-cat.lit.bright .ear{
+    background:#c8ffdc;
+    box-shadow:0 0 8px #3dff6ee0;
+  }
+  .inv-cat .ear.left{ left:10%; }
+  .inv-cat .ear.right{ right:10%; }
+  .music-btn{
+    display:inline-block;
+    margin:14px 4px 0;
+    padding:8px 18px;
+    background:#15101f;
+    color:#3dfff0;
+    border:2px solid #3dfff0;
+    border-radius:4px;
+    font-family:'Courier New',monospace;
+    font-size:0.75rem;
+    letter-spacing:0.05em;
+    cursor:pointer;
+    text-transform:uppercase;
+  }
+  .music-btn:active{
+    background:#3dfff0;
+    color:#0a0710;
+  }
+  .music-btn.on{
+    background:#3dfff0;
+    color:#0a0710;
+  }
+  .mic-btn{
+    color:#ff6fb5;
+    border-color:#ff6fb5;
+  }
+  .mic-btn.on{
+    background:#ff6fb5;
+    color:#0a0710;
+  }
+  .btn-group{
+    display:block;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<h1>Kaiju Kat</h1>
+
+<div class="panel">
+  <div class="frame arcade">
+    <div class="marquee">NOW PLAYING</div>
+    <div class="cab-body">
+      <div class="arcade-screen" id="arcadeScreen">
+        <div class="score">SCORE 003200<br>HI 019850</div>
+        <div class="invaderRow" id="invaderRow"></div>
+        <div class="arcade-scan"></div>
+      </div>
+      <div class="controls">
+        <div class="joystick"></div>
+        <div class="btn-row">
+          <div class="arc-btn red"></div>
+          <div class="arc-btn yellow"></div>
+          <div class="arc-btn blue"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button id="musicBtn" class="music-btn">▶ Play mock chiptune</button>
+    <button id="micBtn" class="music-btn mic-btn">🎤 Use microphone</button>
+  </div>
+  <div class="note" id="micStatus" style="text-align:center;"></div>
+</div>
+
+<script>
+// cat-eared invaders (single color, arcade silhouette + ears) — full grid
+const invaderRow = document.getElementById('invaderRow');
+const invRows = 3, invCols = 5;
+for(let r=0;r<invRows;r++){
+  for(let c=0;c<invCols;c++){
+    const inv = document.createElement('div');
+    inv.className = 'inv-cat';
+    inv.style.animationDelay = (Math.random()*0.8)+'s, '+(Math.random()*0.6)+'s';
+    inv.innerHTML = `
+      <div class="ear left"></div>
+      <div class="ear right"></div>
+      <div class="body"></div>
+    `;
+    invaderRow.appendChild(inv);
+  }
+}
+
+// mock 8-bit chiptune, synthesized live (no audio files, no copyrighted music)
+let audioCtx = null;
+let analyser = null;        // whichever source (chiptune or mic) is currently feeding the visuals
+let chiptuneAnalyser = null;
+let micAnalyser = null;
+let masterGain = null;
+let micStream = null;
+let micSource = null;
+let musicTimer = null;
+let visualLoopId = null;
+let playing = false;
+let mode = null; // 'chiptune' | 'mic' | null
+const musicBtn = document.getElementById('musicBtn');
+const micBtn = document.getElementById('micBtn');
+const micStatus = document.getElementById('micStatus');
+
+function ensureAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// simple looping melody (frequencies in Hz) + a bass note per step
+const melody = [523.25,523.25,659.25,523.25,784.00,0,659.25,0,
+                523.25,523.25,659.25,523.25,698.46,0,0,0];
+const bass   = [130.81,0,130.81,0,164.81,0,130.81,0,
+                146.83,0,146.83,0,174.61,0,130.81,0];
+const stepDur = 0.14; // seconds per 16th note
+let step = 0;
+let loopIndex = 0;
+
+function playNote(freq, type, startTime, dur, gainPeak){
+  if(freq === 0) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(gainPeak, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
+  osc.connect(gain).connect(masterGain);
+  osc.start(startTime);
+  osc.stop(startTime + dur + 0.02);
+}
+
+function scheduleStep(){
+  const t = audioCtx.currentTime;
+  // every 4th loop through the pattern is a louder, denser "climax" section
+  const isClimaxLoop = (loopIndex % 4 === 3);
+  const boost = isClimaxLoop ? 2.0 : 1;
+
+  playNote(melody[step % melody.length], 'square', t, stepDur*0.9, 0.06*boost);
+  if(step % 2 === 0) playNote(bass[step % bass.length], 'triangle', t, stepDur*1.6, 0.09*boost);
+  if(isClimaxLoop){
+    // extra high layer to thicken the climax section
+    const extra = melody[(step + 5) % melody.length];
+    if(extra) playNote(extra * 1.5, 'sawtooth', t, stepDur*0.5, 0.05);
+  }
+
+  step++;
+  if(step % melody.length === 0) loopIndex++;
+}
+
+// analyse live audio (from whichever source is active) and drive invader lighting + shake
+const invaderEls = () => document.querySelectorAll('.inv-cat');
+const freqData = () => {
+  const arr = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(arr);
+  return arr;
+};
+function band(arr, loFrac, hiFrac){
+  const lo = Math.floor(arr.length*loFrac), hi = Math.floor(arr.length*hiFrac);
+  let sum = 0;
+  for(let i=lo;i<hi;i++) sum += arr[i];
+  return sum / Math.max(1, hi-lo) / 255; // 0..1
+}
+
+let rollingEnergy = 0.05; // adaptive baseline for detecting climactic peaks
+let wasClimactic = false;
+// fixed palette to cycle through on each climactic shake — hue-rotate degrees
+// relative to the invaders' native color (#3dff6e, a green)
+const colorCycle = [
+  { name: 'green',  hue: 0   }, // native color, no rotation needed
+  { name: 'pink',   hue: 300 },
+  { name: 'purple', hue: 250 },
+  { name: 'blue',   hue: 170 }
+];
+let colorIndex = 0;
+
+function visualLoop(){
+  if(!playing) return;
+  const data = freqData();
+  const bassLvl = band(data, 0, 0.12);
+  const midLvl  = band(data, 0.12, 0.4);
+  const highLvl = band(data, 0.4, 0.9);
+  const overall = (bassLvl + midLvl + highLvl) / 3;
+
+  // slow-moving baseline of "typical" energy level
+  rollingEnergy = rollingEnergy * 0.96 + overall * 0.04;
+  // climactic = current energy well above the recent baseline, and not just noise
+  const isClimactic = overall > rollingEnergy * 1.4 && overall > 0.09;
+
+  // step to the next color in the cycle each time a climactic shake kicks in
+  if(isClimactic && !wasClimactic){
+    colorIndex = (colorIndex + 1) % colorCycle.length;
+    invaderRow.style.filter = `hue-rotate(${colorCycle[colorIndex].hue}deg)`;
+  }
+  wasClimactic = isClimactic;
+
+  const shakeAmt = isClimactic ? (bassLvl * 16 + 4) : 0;
+  const els = invaderEls();
+  const total = els.length;
+
+  // skip the near-silent DC bins, spread invaders across the rest of the spectrum
+  const usableStart = 2;
+  const usableEnd = Math.floor(data.length * 0.55);
+  const range = usableEnd - usableStart;
+
+  els.forEach((el, i) => {
+    const binIdx = usableStart + Math.floor((i / total) * range);
+    const lvl = data[binIdx] / 255; // 0..1 for this invader's slice of the spectrum
+
+    // during a climactic section, the threshold drops so more of them light up
+    const litThreshold = isClimactic ? 0.14 : 0.28;
+    const isLit = lvl > litThreshold;
+    const isBright = isLit && (lvl > 0.55 || isClimactic && lvl > 0.35);
+
+    el.classList.toggle('lit', isLit);
+    el.classList.toggle('bright', isBright);
+
+    if(isClimactic){
+      const dx = (Math.random()-0.5) * shakeAmt;
+      const dy = (Math.random()-0.5) * shakeAmt;
+      el.style.setProperty('--shakeX', dx.toFixed(1)+'px');
+      el.style.setProperty('--shakeY', dy.toFixed(1)+'px');
+    } else {
+      el.style.setProperty('--shakeX', '0px');
+      el.style.setProperty('--shakeY', '0px');
+    }
+  });
+
+  visualLoopId = requestAnimationFrame(visualLoop);
+}
+
+function resetInvaderStyles(){
+  invaderEls().forEach(el => {
+    el.style.filter = '';
+    el.classList.remove('lit', 'bright');
+    el.style.setProperty('--shakeX', '0px');
+    el.style.setProperty('--shakeY', '0px');
+  });
+}
+
+function resetVisualState(){
+  rollingEnergy = 0.05;
+  wasClimactic = false;
+  colorIndex = 0;
+  if(visualLoopId) cancelAnimationFrame(visualLoopId);
+  resetInvaderStyles();
+  invaderRow.style.filter = '';
+}
+
+function stopChiptune(){
+  if(musicTimer) clearInterval(musicTimer);
+  musicTimer = null;
+  musicBtn.textContent = '▶ Play mock chiptune';
+  musicBtn.classList.remove('on');
+}
+
+function stopMic(){
+  if(micStream){
+    micStream.getTracks().forEach(t => t.stop());
+    micStream = null;
+  }
+  if(micSource){
+    micSource.disconnect();
+    micSource = null;
+  }
+  micBtn.textContent = '🎤 Use microphone';
+  micBtn.classList.remove('on');
+  micStatus.textContent = '';
+}
+
+function startChiptune(){
+  ensureAudioCtx();
+  if(!chiptuneAnalyser){
+    masterGain = audioCtx.createGain();
+    chiptuneAnalyser = audioCtx.createAnalyser();
+    chiptuneAnalyser.fftSize = 256;
+    masterGain.connect(chiptuneAnalyser);
+    chiptuneAnalyser.connect(audioCtx.destination); // we want to hear this one
+  }
+  analyser = chiptuneAnalyser;
+  step = 0;
+  loopIndex = 0;
+  resetVisualState();
+  scheduleStep();
+  musicTimer = setInterval(scheduleStep, stepDur*1000);
+  musicBtn.textContent = '■ Stop chiptune';
+  musicBtn.classList.add('on');
+  mode = 'chiptune';
+  playing = true;
+  visualLoop();
+}
+
+async function startMic(){
+  ensureAudioCtx();
+  try{
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(err){
+    micStatus.textContent = "Couldn't access the microphone — check your browser's permission settings.";
+    return;
+  }
+  if(!micAnalyser){
+    micAnalyser = audioCtx.createAnalyser();
+    micAnalyser.fftSize = 256;
+    // note: intentionally NOT connected to audioCtx.destination, so you don't hear feedback
+  }
+  micSource = audioCtx.createMediaStreamSource(micStream);
+  micSource.connect(micAnalyser);
+  analyser = micAnalyser;
+  resetVisualState();
+  micBtn.textContent = '■ Stop microphone';
+  micBtn.classList.add('on');
+  micStatus.textContent = 'Listening to your mic — play some music nearby.';
+  mode = 'mic';
+  playing = true;
+  visualLoop();
+}
+
+function stopAll(){
+  stopChiptune();
+  stopMic();
+  playing = false;
+  mode = null;
+  resetVisualState();
+}
+
+musicBtn.addEventListener('click', () => {
+  if(mode === 'chiptune'){
+    stopAll();
+    return;
+  }
+  if(mode === 'mic') stopMic();
+  startChiptune();
+});
+
+micBtn.addEventListener('click', () => {
+  if(mode === 'mic'){
+    stopAll();
+    return;
+  }
+  if(mode === 'chiptune') stopChiptune();
+  startMic();
+});
+</script>
+
+</body>
+</html>
