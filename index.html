@@ -140,20 +140,24 @@
   /* ---------- CAT-EARED INVADERS (single color, same silhouette as before + ears) ---------- */
   .invaderRow{
     position:absolute;
-    top:12%;
-    bottom:8%;
+    top:10%;
+    bottom:6%;
     left:0; right:0;
     display:flex;
-    flex-wrap:wrap;
+    flex-direction:column;
     justify-content:space-evenly;
     align-content:space-evenly;
-    gap:6% 0;
     padding:0 6%;
     z-index:3;
   }
+  .inv-row{
+    display:flex;
+    justify-content:space-evenly;
+    align-items:center;
+  }
   .inv-cat{
     position:relative;
-    width:14%;
+    width:9%;
     aspect-ratio:1;
     animation: march 1.4s steps(2) infinite alternate;
   }
@@ -175,9 +179,16 @@
     inset:0;
     background:#3a4a3e;
     border:1px solid #4d6155;
-    clip-path: polygon(20% 0%, 80% 0%, 100% 40%, 100% 100%, 80% 70%, 20% 70%, 0% 100%, 0% 40%);
+    clip-path: polygon(
+      20% 0%, 30% 0%, 30% 12%, 40% 12%, 40% 0%, 60% 0%, 60% 12%, 70% 12%, 70% 0%, 80% 0%,
+      80% 12%, 90% 12%, 90% 25%, 100% 25%, 100% 100%,
+      90% 100%, 90% 80%, 80% 80%, 80% 70%, 70% 70%, 70% 82%, 60% 82%, 60% 70%,
+      40% 70%, 40% 82%, 30% 82%, 30% 70%, 20% 70%, 20% 80%, 10% 80%, 10% 100%,
+      0% 100%, 0% 25%, 10% 25%, 10% 12%, 20% 12%
+    );
     box-shadow:none;
     transition: background 0.18s ease-out, box-shadow 0.18s ease-out;
+    image-rendering: pixelated;
   }
   .inv-cat .ear{
     position:absolute;
@@ -186,7 +197,10 @@
     aspect-ratio:1;
     background:#3a4a3e;
     border:1px solid #4d6155;
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    clip-path: polygon(
+      45% 0%, 55% 0%, 55% 20%, 65% 20%, 65% 40%, 75% 40%, 75% 60%, 85% 60%, 85% 100%,
+      15% 100%, 15% 60%, 25% 60%, 25% 40%, 35% 40%, 35% 20%, 45% 20%
+    );
     box-shadow:none;
     transition: background 0.18s ease-out, box-shadow 0.18s ease-out;
   }
@@ -208,6 +222,20 @@
   }
   .inv-cat .ear.left{ left:10%; }
   .inv-cat .ear.right{ right:10%; }
+
+  /* the one special invader — pixel T-Rex instead of a cat-eared sprite */
+  .inv-godzilla{
+    transform:scale(1.5);
+  }
+  .inv-godzilla .ear{ display:none; }
+  .inv-godzilla .body{
+    clip-path: polygon(
+      0% 60%, 0% 50%, 15% 50%, 15% 35%, 30% 35%, 30% 20%, 45% 20%, 45% 10%,
+      60% 10%, 60% 5%, 78% 5%, 78% 15%, 95% 15%, 95% 25%, 100% 25%, 100% 35%,
+      85% 35%, 85% 45%, 70% 45%, 70% 55%, 60% 55%, 60% 75%, 50% 75%, 50% 100%,
+      35% 100%, 35% 80%, 25% 80%, 25% 100%, 10% 100%, 10% 65%, 0% 65%
+    );
+  }
   .btn-group{
     display:flex;
     justify-content:center;
@@ -297,11 +325,14 @@
 </div>
 
 <script>
-// cat-eared invaders (single color, arcade silhouette + ears) — full grid
+// cat-eared invaders (single color, arcade silhouette + ears) — 3 rows: 7, 7, 1 (Godzilla)
 const invaderRow = document.getElementById('invaderRow');
-const invRows = 3, invCols = 5;
-for(let r=0;r<invRows;r++){
-  for(let c=0;c<invCols;c++){
+const rowCounts = [7, 7, 1];
+rowCounts.forEach((count, rowIdx) => {
+  const isBottomRow = rowIdx === rowCounts.length - 1;
+  const rowDiv = document.createElement('div');
+  rowDiv.className = 'inv-row';
+  for(let c=0; c<count; c++){
     const inv = document.createElement('div');
     inv.className = 'inv-cat';
     inv.style.animationDelay = (Math.random()*0.8)+'s, '+(Math.random()*0.6)+'s';
@@ -310,9 +341,10 @@ for(let r=0;r<invRows;r++){
       <div class="ear right"></div>
       <div class="body"></div>
     `;
-    invaderRow.appendChild(inv);
+    rowDiv.appendChild(inv);
   }
-}
+  invaderRow.appendChild(rowDiv);
+});
 
 // kaiju-movie-style theme, synthesized live (no audio files, no copyrighted music)
 let audioCtx = null;
@@ -501,7 +533,6 @@ function resetVisualState(){
 function stopChiptune(){
   if(musicTimer) clearInterval(musicTimer);
   musicTimer = null;
-  musicBtn.textContent = '▶ Play kaiju theme';
   musicBtn.classList.remove('on');
 }
 
@@ -514,7 +545,6 @@ function stopMic(){
     micSource.disconnect();
     micSource = null;
   }
-  micBtn.textContent = '🎤 Use microphone';
   micBtn.classList.remove('on');
   micStatus.textContent = '';
 }
@@ -534,7 +564,6 @@ function startChiptune(){
   resetVisualState();
   scheduleStep();
   musicTimer = setInterval(scheduleStep, stepDur*1000);
-  musicBtn.textContent = '■ Stop theme';
   musicBtn.classList.add('on');
   mode = 'chiptune';
   playing = true;
@@ -558,7 +587,6 @@ async function startMic(){
   micSource.connect(micAnalyser);
   analyser = micAnalyser;
   resetVisualState();
-  micBtn.textContent = '■ Stop microphone';
   micBtn.classList.add('on');
   micStatus.textContent = 'Listening to your mic — play some music nearby.';
   mode = 'mic';
